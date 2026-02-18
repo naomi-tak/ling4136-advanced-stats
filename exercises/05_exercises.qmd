@@ -1,0 +1,91 @@
+---
+title: "session05 - excercises"
+format: html
+editor: visual
+date: 2025-07-17
+author: Timo Roettger
+execute:
+  error: false
+  warning: true
+  message: false
+  cache: false
+---
+
+# Preamble: Loading packages and configuration
+
+```{r}
+#| label: data_and_libraries
+#| echo: false
+
+# just run this code chunk
+# function to ignoring the setting of the relative path below when knitting
+run_if_not_knitting <- function(expr) {
+  if (!isTRUE(getOption("knitr.in.progress"))) {
+    eval(expr)
+  }
+}
+
+# nifty code using the pacman package
+# it checks if the packages specified below are installed, if not, they will be installed, if yes, they will be loaded
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(rstudioapi, tidyverse, brms)
+
+# set the current working directory to the one where this file is
+run_if_not_knitting(current_working_dir <- dirname(rstudioapi::getActiveDocumentContext()$path))
+run_if_not_knitting(setwd(current_working_dir))
+
+# options to increase efficiency of brms models (optional)
+options(brms.backend = "cmdstanr")
+options(mc.cores = parallel::detectCores())
+
+```
+
+# Introduction
+The main learning goals of this week's practical parts are:
+
+-   learning that running bayesian analyses isn't scary
+
+In this exercise, we will model the mean of a distribution of F0 values (the acoustic analog of "voice pitch"). 
+
+```{r}
+#| label: load-pitch
+
+pitch <- read_csv('../data/winter_2021_pitch_averaged_subset.csv')
+
+# have a look
+pitch
+
+```
+
+# A simple linear model
+
+We run a simple linear model without predictors to estimate the mean of the value. We start with a simple linear model using the frequentist implementation.
+
+```{r}
+#| label: lm
+
+xlm <- lm(F0 ~ 1, 
+          data = pitch)
+
+summary(xlm)
+
+```
+
+The model estimates the f0 mean to be 124 Hz. Familiar territory. Familiar table to interpret. 
+
+Now we do the same thing the Bayesian way with `brm()`. When you execute it, it will take a little bit to compile the R code into Stan code. Stan, a probabilistic programming language, runs in the background to do the Bayesian magic. 
+
+```{r}
+#| label: brm
+
+xblm <- brm(F0 ~ 1, 
+            data = pitch)
+
+summary(xblm)
+
+```
+
+Now this output looks eerily similar to the `lm()` output above, right? And the mean estimates for the Intercept (the estimated mean value) and the residual variance (sigma) are very similar. 
+
+Welcome to a whole new world. You are a Bayesian analyst now.  
+
