@@ -1,0 +1,41 @@
+---
+title: "Session06"
+format: html
+editor: visual
+---
+
+# Session06 Priors (Belief)
+
+The student-t distribution
+
+-   bit squashed distribution
+
+-   bit thicker tails : higher distribution on the lower possible values - liberal
+
+-   good when we dont have alot of data
+
+-   Normal (df is 1) - Cauchy (df is infinite)
+
+## Priors in linear models
+
+![](images/clipboard-3154732203.png)
+
+![](images/clipboard-1274535851.png)
+
+## How to specify priors - Think!!
+
+-   does the parameter have **natural bounds**
+
+-   what **distribution** does the parameter have
+
+-   what are plausible **values ranges**? - domain knowledge
+
+![](images/clipboard-2223513033.png)
+
+## Weakly informative priors
+
+-   assigning the highest probability to an effect of zero
+
+-   still constrain the plausible values
+
+![](images/clipboard-1543461647.png)

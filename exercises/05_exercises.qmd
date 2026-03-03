@@ -41,11 +41,12 @@ options(mc.cores = parallel::detectCores())
 ```
 
 # Introduction
-The main learning goals of this week's practical parts are:
+
+#### The main learning goals of this week's practical parts are:
 
 -   learning that running bayesian analyses isn't scary
 
-In this exercise, we will model the mean of a distribution of F0 values (the acoustic analog of "voice pitch"). 
+In this exercise, we will model the mean of a distribution of F0 values (the acoustic analog of "voice pitch").
 
 ```{r}
 #| label: load-pitch
@@ -71,9 +72,9 @@ summary(xlm)
 
 ```
 
-The model estimates the f0 mean to be 124 Hz. Familiar territory. Familiar table to interpret. 
+The model estimates the f0 mean to be 124 Hz. Familiar territory. Familiar table to interpret.
 
-Now we do the same thing the Bayesian way with `brm()`. When you execute it, it will take a little bit to compile the R code into Stan code. Stan, a probabilistic programming language, runs in the background to do the Bayesian magic. 
+Now we do the same thing the Bayesian way with `brm()`. When you execute it, it will take a little bit to compile the R code into Stan code. Stan, a probabilistic programming language, runs in the background to do the Bayesian magic.
 
 ```{r}
 #| label: brm
@@ -85,7 +86,6 @@ summary(xblm)
 
 ```
 
-Now this output looks eerily similar to the `lm()` output above, right? And the mean estimates for the Intercept (the estimated mean value) and the residual variance (sigma) are very similar. 
+Now this output looks eerily similar to the `lm()` output above, right? And the mean estimates for the Intercept (the estimated mean value) and the residual variance (sigma) are very similar.
 
-Welcome to a whole new world. You are a Bayesian analyst now.  
-
+Welcome to a whole new world. You are a Bayesian analyst now.

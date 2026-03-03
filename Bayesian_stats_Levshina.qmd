@@ -1,0 +1,314 @@
+# Bayesian statistics 
+
+## Levshina 2025
+
+### 3. Main differences of Bayesian from Frequentist
+
++----------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------+
+|                                                          | Frequentist                                                                                                                                                      | Bayesian                                                                                                                            |
++==========================================================+==================================================================================================================================================================+=====================================================================================================================================+
+| **Probability**                                          | frequency (long-run frequency)                                                                                                                                   | belief (expectations, opinions, assumptions, convictions)                                                                           |
++----------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------+
+| **Parameters**                                           | point estimates                                                                                                                                                  | probability distributions                                                                                                           |
++----------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------+
+| **population parameters**                                | unknown but fixed constant                                                                                                                                       | random variables described by probability distribution                                                                              |
++----------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------+
+| **when fitting a model, intercept/slope coefficient is** | one number                                                                                                                                                       | whole probability distribution                                                                                                      |
++----------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------+
+| **hypothesis testing**                                   | Null hypothesis significance testing (NHST)                                                                                                                      | Bayes factors, \                                                                                                                    |
+|                                                          |                                                                                                                                                                  | Regions of Practical Equivalence(ROPE), \                                                                                           |
+|                                                          |                                                                                                                                                                  | Maximum A Posteriori-based p-values, \                                                                                              |
+|                                                          |                                                                                                                                                                  | e-value in the Full Bayesian significance test(FBST), \                                                                             |
+|                                                          |                                                                                                                                                                  | Probability of Direction (PD)                                                                                                       |
++----------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------+
+| Uncertainty                                              | 95% confidence intervals, reflecting long-run reliability of the method, not the probability that the parameter lies within a specific range for a given dataset | Credible interval: A 95% credible interval means there is a 95% probability that the parameter of interest lies within that range \ |
+|                                                          |                                                                                                                                                                  | 1. ETI (Equal-Tailed Interval)\                                                                                                     |
+|                                                          |                                                                                                                                                                  | 2. HDI (Highest Density Interval)\* preferable when the data is skewed                                                              |
++----------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------+
+|                                                          |                                                                                                                                                                  |                                                                                                                                     |
++----------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------+
+
+### 3.3 Priors and Posteriors
+
+#### Bayes' rule:
+
+#### - P(virus\|positive) = P(positive\|virus) \* P(virus)/P(positive)
+
+コロナ検査陽性の人が実際に罹患している確率は、実際に罹患していて検査陽性の確率（真の陽性）✖️検査陽性（真の陽性＋偽陽性）の中で実際に罹患している人の割合
+
+0.  **事後分布、Posterior probability distribution** (**posterior**) : `P(𝛳|Data)`
+
+    データ（観測結果）を得た後に、事前分布を尤度で更新した、真のパラメータの確率分布
+
+    ・represents the degree of belief in each possible value of the parameter after taking the data into account
+
+    ・The distribution obtained from
+
+    1.  **事前分布（事前知識）Prior** probability: `P(𝛳)`
+
+        Probability distribution of parameter 𝛳 before observing the data
+
+    2.  **尤度、Likelihood**: `P(Data|𝛳)`
+
+        -   probability of observing the data given a specific value of 𝛳
+
+        -   パラメータの値が正しいと仮定したときに観測されたデータがどれくらいあり得るか
+
+        -   **観測されたデータ**Xは固定、θを動かして「どの θが一番ありそうか」を見る
+
+    3.  **周辺尤度、（データが出る確率）Marginal likelihood**: `P(Data)`, evidence
+
+        probability of the data. usually a normalizing constant that helps make sure that the posterior
+
+#### P(𝛳\|Data) = P(Data\|𝛳)\* P(𝛳)/P(Data)
+
+-   Posterior = Likelihood x Prior/Evidence \# Evidence is merely a normalizing constant
+
+-   **Posterior ∝ Likelihood x Prior** \# ∝ = "proportional to"
+
+### Examples:
+
+1.  [Strong prior beliefs (informative priors)]{.underline}
+    -   **posterior**: falls between the prior and the likelihood, reflecting expectations and the new evidence
+2.  [No expectations about the effect, uniform/flat/diffuse priors (non-informative priors)]{.underline}
+    -   "let the data speak for itself" (suited for clinical studies)
+
+    -   **posterior:** coincides with the likelihood (**Posterior ∝ Likelihood**)
+
+        -   posterior mean == mean from frequentist analysis
+
+        -   the same holds for large sample size (influence of the prior becomes negligible) = **Bayesian central limit theorem**
+3.  [Weakly informative priors]{.underline}
+    -   exert only a minimal effect on the posterior distribution
+
+    -   commonly used for regularization, helping to stabilize model estimates without materially influencing the resulting inferences
+
+    -   **posterior**: remains very close to the likelihood
+
+### 3.4 Estimation of parameters
+
+-   Monte Carlo Markov Chain (MCMC) method
+
+    -   Monte Carlo sampling : law of large numbers
+
+    -   Markov chains: random walk in which the next step depends on:
+
+        1.  current position
+        2.  probability of moving to the next position
+
+    -   MCMC algorithm
+
+        -   a random starting value for coefficient
+
+        -   takes a guided random walk through the parameter space, informed by both priors and the data
+
+        -   the walk spends more time in regions where values are more probable and avoids less likely regions
+
+            -   value visited -\> posterior samples
+
+        -   once the Markov chain converged, these samples approximate the posterior distribution
+
+        -   we can then compute the mean, median etc.
+
+### 3.5 Null hypothesis significance testing vs. Bayesian hypothesis testing
+
+see the table above
+
+### 3.6 Confidence vs. credible intervals
+
+Conveying uncertainty about estimated parameters:
+
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Credible interval: A 95% credible interval means there is a 95% probability that the parameter of interest lies within that range \                  |
+| 1. ETI (Equal-Tailed Interval), bounds 2.5% - 97.5% quantiles of posterior distribution\                                                             |
+| 2. HDI (Highest Density Interval)\* preferable when the data is skewed, the narrowest interval containing 95% of the distribution's probability mass |
++------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+### 3.7 Conceptual advantages
+
+1.  the possibility of making direct statements about parameters
+2.  more intuitive interpretation of credible intervals
+3.  integration of prior knowledge and common sense in analyses
+4.  promotes cumulative science,
+    -   enabling unbiased meta-analyses
+
+    -   Bayesian inference can encourage the publication of evidence for the null hypothesis
+5.  Flexibility
+
+### 4. Special cases where Bayesian stats can be particularly useful
+
+1.  [Complex random effects structure : Maximal models and phylogenetic regression]{.underline}
+
+    can model complex random effects without failing to converge, even with data sparseness
+
+2.  [Multinomial and ordinal mixed models]{.underline}
+
+3.  [Data with many extreme values (zeros or ones)]{.underline}
+
+4.  [Problems of too many predictors ("large P") and multicollinearity]{.underline}
+
+5.  [Small sample size ("small N" problem)]{.underline}
+
+6.  [Bayesian meta-analysis]{.underline}
+
+7.  [Testing the null hypothesis]{.underline}
+
+### 4.1 複雑なランダム効果・系統回帰
+
+-   被験者ごと・項目ごとに「切片＋傾き＋交互作用」などを全部入れた\
+    **最大モデル（maximal model）** は、頻度主義のツール（lme4 など）では
+    -   収束しない
+    -   相関が変な値になる\
+        などの問題が出やすい。
+-   **ベイズ回帰（Bayesian regression）**（特に Stan / brms）だと、
+    -   こういう複雑な階層モデルを比較的安定して推定できる
+    -   ランダム効果の相関に **正則化事前分布（regularizing priors）** を入れて、極端な値を防げる。
+
+さらに言語学では：
+
+-   言語間の系統関係を、ランダム効果の **共分散行列（covariance matrix）** として入れる\
+    **系統回帰（phylogenetic regression / hierarchical phylogenetic regression）** が使える。
+-   近い言語（ドイツ語・オランダ語）は似ている、遠い言語（ドイツ語・日本語）はあまり似ていない、という依存をモデル側で説明できる。\
+    → 系統的な偏りを考慮しつつ、言語を除外せずに分析できる。
+
+------------------------------------------------------------------------
+
+### 4.2 多カテゴリ・順序付きの混合モデル
+
+-   応答が
+    -   「A / B / C」など 3 つ以上のカテゴリ（**多項・multinomial**）
+    -   「1〜7 のリッカート尺度」のような順序あり（**順序・ordinal**）\
+        のとき、
+    -   lme4 では扱いが難しいが、
+    -   **brms（Stan のフロントエンド）** なら標準でサポート。
+
+具体的には：
+
+-   多項ロジスティック：**多項回帰（multinomial regression, family = "categorical"）**
+-   リッカートなど順序データ：**累積オーディナルモデル（cumulative ordinal model）**
+
+比例オッズ仮定が合わないときは、より柔らかい **隣接カテゴリモデル（adjacent categories models）** に切り替えられる。
+
+------------------------------------------------------------------------
+
+### 4.3 0 や 1 がたくさん出るスライダーなどのデータ
+
+-   100 点スライダーを 0〜1 にすると、
+    -   中間も使うが、
+    -   0 と 1 にもやたら多くデータがたまる\
+        ことがよくある → **0–1 インフレーション（zero-one inflation）**。
+
+普通の回帰や単純なベータ回帰だと不向きなので、\
+**0–1 インフレ・ベータ回帰（ZOIB: Zero-One Inflated Beta regression）** を使う：
+
+-   0 と 1 の間の値 → **ベータ回帰（beta regression）**
+-   ばらつきの大きさ → $\phi$ のモデル
+-   「0 または 1 か、それ以外か」→ ロジスティック回帰
+-   「0 か 1 か」→ ロジスティック回帰
+
+これで、
+
+-   全体をまんべんなく使う人
+-   真ん中ばかり使う人
+-   0 と 1 しか押さない人
+
+といった **個人差（individual variability）** を、ちゃん��モデルで表現できる。\
+brms だと `family = "zero_one_inflated_beta"`。
+
+0 だけが多い場合は、**ゼロ・インフレ回帰（zero-inflated regression）** を使う。
+
+------------------------------------------------------------------------
+
+### 4.4 説明変数が多すぎる・共線性が強い
+
+-   コーパスや単語埋め込み（word embeddings）を使うと、
+    -   説明変数の数が多い（**large P problem**）
+    -   変数どうしが強く相関（**多重共線性・multicollinearity**）\
+        になりがち。
+-   そのまま推定すると、係数が
+    -   不自然に大きく
+    -   標準誤差も大きく\
+        なって、「どの変数が効いているか」が不明瞭になる。
+
+ここで効くのが **シュリンク事前分布（shrinkage priors）**：
+
+-   **LASSO（ラッソ）**：ラプラス事前（Laplacian priors）\
+-   **リッジ回帰（ridge regression）**：正規事前（normal priors）\
+-   **Horseshoe 事前分布（horseshoe prior）**：\
+    「ほとんどの係数は 0 近く、一部だけ大きい」という想定向き。
+
+さらに **ベイズモデル平均（BMA: Bayesian Model Averaging）**：
+
+-   1 つの「最良モデル」を選ぶのではなく、\
+    多数のモデルを **事後モデル確率（PMP: Posterior Model Probability）** で重みづけして平均。
+-   各説明変数について
+    -   **事後包含確率（posterior inclusion probability）**：どれくらいのモデルで採用されたか
+    -   係数が正か負かの確率\
+        を出して、「どの変数がどの向きに効きそうか」を確率的に評価できる。
+
+------------------------------------------------------------------------
+
+### 4.5 データが少ない（small N）
+
+-   音声コーパス、マルチモーダル、希少現象の調査などでは、\
+    データ収集が大変で、標本が小さくなりやすい（**small N problem**）。
+-   小さいデータで **最大尤度（Maximum Likelihood, ML）** を使うと、
+    -   係数が極端
+    -   信頼区間が広い
+    -   過学習（overfitting）\
+        になりやすい。
+
+ベイズでは **情報的事前分布（informative priors）** が使える：
+
+-   大きなデータでの推定結果（事後分布）を、「事前の知識」とみなして、
+-   その平均と分散をもつ正規分布を、小さいデータの解析時の事前にする。
+-   新しい説明変数だけは、弱い事前（weakly informative priors）にしておく。
+
+→ こうすると、小さいデータでも
+
+-   以前に得た知識を活かしつつ
+-   極端な推定や過学習を抑えられる。
+
+------------------------------------------------------------------------
+
+### 4.6 ベイズ・メタ分析（Bayesian meta-analysis）
+
+-   複数の研究の結果をまとめて「全体としての効果」を知りたいときに使うのが **メタ分析（meta-analysis）**。
+-   ベイズ版では、**階層ベイズモデル（Bayesian hierarchical model）** で
+    -   各研究の効果
+    -   研究間のばらつき（heterogeneity）\
+        を同時に推定する。
+-   個々の研究や、含まれる研究数が少ないときでも、\
+    不確実性を正直に表現しつつ統合しやすい。
+
+------------------------------------------------------------------------
+
+### 4.7 帰無仮説をちゃんと検定する：ベイズファクター
+
+-   普通の p 値（frequentist）で p \> 0.05 だと、
+    -   本当に「効果なし」なのか、
+    -   データが足りないだけなのか、\
+        判別できない。
+-   **ベイズファクター（Bayes Factor, BF）** は、
+    -   **帰無仮説（null hypothesis, H₀）**
+    -   **対立仮説（alternative hypothesis, H₁）**\
+        のどちらをどれくらい支持しているかを、比の形で教えてくれる。
+
+例：BF₀₁ = 5\
+→ データは「H₀（差なし）」を「H₁（差あり）」より約 5 倍支持している。
+
+これにより：
+
+-   「有意でないから何も言えない」ではなく、
+-   「むしろ“差がない”という説をそれなりに支持している」という言い方ができる。\
+    → **ゼロ結果（null results）** にも意味を持たせやすい。
+
+ただし：
+
+-   データが少なすぎたり、効果がとても小さいときは、\
+    ベイズファクターも **結論不可能（inconclusive）** になりがちで、\
+    そこを魔法のように解決してくれるわけではない。
+
+------------------------------------------------------------------------
+
+### 5. Perspectives, challenges and good practices
