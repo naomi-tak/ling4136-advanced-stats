@@ -49,7 +49,7 @@ Winter, B., & Matlock, T. (2013). Making judgments based on similarity and proxi
 #| label: preprocessing
 
 # Load our datasets
-sim <- read_csv("../data/linguistic_similarity.csv")
+sim <- read_csv("../../data/linguistic_similarity.csv")
 
 ```
 
