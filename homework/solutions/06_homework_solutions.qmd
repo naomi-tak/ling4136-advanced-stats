@@ -35,7 +35,7 @@ run_if_not_knitting(current_working_dir <- dirname(rstudioapi::getActiveDocument
 run_if_not_knitting(setwd(current_working_dir))
 
 # options to increase efficiency of brms models (optional)
-#options(brms.backend = "cmdstanr")
+options(brms.backend = "cmdstanr")
 options(mc.cores = parallel::detectCores())
 
 ```
@@ -130,7 +130,6 @@ Add your priors to the model below. We will run the model and sample only from o
 
 xmdl_prior <- brm(Distance ~ Sem,
             family = gaussian(),
-            #prior = #YOUR PRIORS HERE
             prior = my_priors,
             sample_prior = "only",
             data = sim,
