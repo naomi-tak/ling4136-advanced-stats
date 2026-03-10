@@ -83,28 +83,57 @@ Check which priors this model needs and specify weakly informative priors.
 
 Remember that weakly informative priors are priors that do not bias the posteriors in any direction, but reasonably constrain the parameter space, i.e. only reasonable values are assumed.
 
-For priors of class `Intercept` and `b`, constrain the parameter space with a wide normal distribution. 
+For priors of class `Intercept` and `b`, constrain the parameter space with a wide normal distribution.
 
 ```{r}
 #| label: get_prior
 
 # YOUR CODE HERE
 
+# formula
+mdl_formula <- bf(log_rt ~ log_frequency)
+# check priors
+get_prior(mdl_formula, quantese) # intercept, log_frequency, sigma?
+
+# prior exploration
+quantese %>% 
+  ggplot(aes(x=log_rt, y=log_frequency))+
+  geom_point()+
+  theme_minimal()
+
+# - for intercept 
+min_rt <- min(quantese$log_rt) # 5.87
+max_rt <- max(quantese$log_rt) # 7.79
+mean_rt <- mean(quantese$log_rt, na.rm=TRUE) # 6.54
+sd_rt <- (max_rt - min_rt)/4
+
+#plot_normal(mean_rt, sd_rt)
+
+# - for coef log_freq -- outcome(rt) sd / predictor(freq) sd
+min_freq <- min(quantese$log_frequency) 
+max_freq <- max(quantese$log_frequency) 
+mean_freq <- mean(quantese$log_frequency, na.rm=TRUE) 
+sd_freq <- (max_freq - min_freq)/4
+
+#plot_normal(mean_freq, sd_freq)
+
+sd_coef <- sd_rt/sd_freq
+
 # specify weakly informative priors
-my_priors <- #YOUR PRIORS HERE
+my_priors <- c(prior(normal(mean_rt, sd_rt), class = "Intercept"),
+               prior(normal(0, sd_coef), class = "b", coef = "log_frequency"))
 
 ```
 
-We can also now get used to specifying priors for classes `sd` and `cor`. Priors of class `sd` are priors for the variance associated with our random effects. You see here 2 `sd` priors for group `ItemID`. The first one is just a generic prior for all `ItemID` coefficients and the second one with the `coef = Intercept` stands for the random intercept variation between items. Similarly for group `PartID`, we have 3 priors. The first one is again just a generic prior for all `PartID` coefficients. The second one with the `coef = Intercept` stands for the random intercept variation between participants. And the last one with the `coef = log_frequency` stands for the random slope variation between participants for the predictor `log_frequency`. How do we specify these priors. We have usually no idea what to expect from these parameters, so we here also specify very diffuse priors centered on zero. We pick a cauchy distribution (remember? super squashed normal distributions) because they have thick tails. Let's make them super diffuse and pick a `sd = 3` for both items and participants.
+We can also now get used to specifying priors for classes `sd` and `cor`. Priors of [class `sd`]{.underline} are priors for the variance associated with our random effects. You see here 2 `sd` priors for group `ItemID`. The first one is just a generic prior for all `ItemID` coefficients and the second one with the `coef = Intercept` stands for the random intercept variation between items. Similarly for group `PartID`, we have 3 priors. The first one is again just a generic prior for all `PartID` coefficients. The second one with the `coef = Intercept` stands for the random intercept variation between participants. And the last one with the `coef = log_frequency` stands for the random slope variation between participants for the predictor `log_frequency`. How do we specify these priors. We have usually no idea what to expect from these parameters, so we here also specify very diffuse priors centered on zero. We pick a cauchy distribution (remember? super squashed normal distributions) because they have thick tails. Let's make them super diffuse and pick a `sd = 3` for both items and participants.
 
 ```{r}
 #| label: add_sd_priors
 
 # add weakly informative priors for sd
 my_priors <- c(my_priors, 
-               prior(cauchy(0, 3), class = 'sd', group = 'ItemID'),
-               prior(cauchy(0, 3), class = 'sd', group = 'PartID'))
-
+              prior(cauchy(0, 3), class = 'sd', group = 'ItemID'),
+              prior(cauchy(0, 3), class = 'sd', group = 'PartID'))
 ```
 
 And finally, if your model as random slopes, they have by default a correlation parameter for intercept and slope. We are not getting into the math here and will follow advice from smart people. We use Lewandowski-Kurowicka-Joe priors (shape = 1): `lkj(1)`. Specifying this prior for random slope models actually helps a lot with the fitting procedure.
@@ -120,7 +149,7 @@ my_priors <- c(my_priors,
 
 ### (B) Run model
 
-Now run the model with 4 chains, 1000 warm-up and 1000 post-warm-up samples per chain. Check that chains are reasonably mixed and that sampling yielded a sufficient effective sample size. If not address the issues appropriately (check slides again). 
+Now run the model with 4 chains, 1000 warm-up and 1000 post-warm-up samples per chain. Check that chains are reasonably mixed and that sampling yielded a sufficient effective sample size. If not address the issues appropriately (check slides again).
 
 ```{r}
 #| label: model_quant
@@ -132,11 +161,34 @@ Now run the model with 4 chains, 1000 warm-up and 1000 post-warm-up samples per 
 
 # YOUR CODE HERE
 
+# prior predictive check 
+#xmdl_prior <- brm(log_rt~ log_frequency,
+#                  family = gaussian(),
+#                  prior = my_priors,
+#                  sample_prior = 'only',
+#                  data = quantese,
+#                  seed = 12)
+#spread_draws(b_Intercept, b_log_frequency)
+#pp_check(xmdl_prior)
+
+
+# full model
+xmdl <- brm(log_rt ~ log_frequency + (1 + log_frequency | PartID) + (1 | ItemID),
+                  family = gaussian(),
+                  prior = my_priors,
+                  data = quantese,
+                  chains = 4, cores = 4,
+            iter = 1000, warmup = 1000, seed = 12)
+
+# I couldnt find a way to fix the following error, 
+
 ```
+
+![](images/clipboard-1725270259.png)
 
 ### (C) Plot posterior predictions
 
-Find a way to extract posterior samples from the model for the `Intercept` and the `log_frequency` coefficient and plot the predicted posterior mean linear model alongside its 95% Credible Intervals. There are many different ways to get there. 
+Find a way to extract posterior samples from the model for the `Intercept` and the `log_frequency` coefficient and plot the predicted posterior mean linear model alongside its 95% Credible Intervals. There are many different ways to get there.
 
 ```{r}
 #| label: plot_predictions

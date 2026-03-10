@@ -72,7 +72,7 @@ my_priors <- c(prior(normal(9, 3), class = 'Intercept'),
 # run model
 xmdl_sqrt <- brm(sqrt_dist ~ Sem,
             family = gaussian(),
-            file = "../../models/sqrt_sim.RDS",
+            file = "../models/sqrt_sim.RDS",
             prior = my_priors,
             data = sim,
             chains = 4,
@@ -92,8 +92,10 @@ Use the `mcmc_plot()` function to assess if the sampling chains have converged. 
 #| label: mcmc-plot
 
 # YOUR CODE HERE
-# YOUR ASSESSMENT HERE
 
+mcmc_plot(xmdl_sqrt, type = "trace")
+# YOUR ASSESSMENT HERE
+# looks good, looking like a caterpillars
 ```
 
 # (B) Assessing chain convergence
@@ -104,13 +106,15 @@ Double check that different chains yields similar posteriors with `mcmc_dens_ove
 #| label: mcmc-plot
 
 # YOUR CODE HERE
-# YOUR ASSESSMENT HERE
+mcmc_dens_overlay(xmdl_sqrt)
 
+# YOUR ASSESSMENT HERE
+# distributions look very similar
 ```
 
 # (C) Checking convergence diagnostics
 
-Look at the model output and assess whether Rhat, and effective sample sizes (ESS) are satisfying
+Look at the model output and assess whether **Rhat**, and **effective sample sizes (ESS)** are satisfying
 
 ```{r}
 #| label: convergence
@@ -118,9 +122,9 @@ Look at the model output and assess whether Rhat, and effective sample sizes (ES
 # model output
 xmdl_sqrt
 
-# Rhat values are ~ 1.00 
-# bulk ESS > 400,
-# tail ESS > 100
+# Rhat values are ~ 1.00; chains have converged
+# bulk ESS > 400; usually safe for mean/variabnce estimates
+# tail ESS > 100; usually safe for credeible intervals
 
 # All good!
 
