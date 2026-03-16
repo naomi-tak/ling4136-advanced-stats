@@ -254,7 +254,7 @@ bayesfactor_parameters(posteriors, priors, direction = "two-sided", null = 0)
 
 ```
 
-First off, the function warns us that BFs might not be very precise without really large sample numbers (>40000). Keep that in mind. Since I eventually want you to calculate BFs over intervals rather than point-values, we gloss over this problem for now.
+First off, the function warns us that BFs might not be very precise without really large sample numbers (\>40000). Keep that in mind. Since I eventually want you to calculate BFs over intervals rather than point-values, we gloss over this problem for now.
 
 Second, we get a whopping BF of 1.98e+03. That means, given the data, the model and the priors, the alternative hypothesis that beta is not 0 is `1980` times more probable than the null hypothesis (beta = 0).
 
@@ -367,7 +367,7 @@ Compute the Bayes factors against the point-null value, bases on prior and poste
 
 ## (h) Write up your results
 
-YOUR WRITE UP HERE. 
+YOUR WRITE UP HERE.
 
 # References
 

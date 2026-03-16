@@ -28,14 +28,14 @@ run_if_not_knitting <- function(expr) {
 # nifty code using the pacman package
 # it checks if the packages specified below are installed, if not, they will be installed, if yes, they will be loaded
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(rstudioapi, tidyverse, lme4, brms, bayestestR)
+pacman::p_load(rstudioapi, tidyverse, lme4, brms, bayestestR, tidybayes, bayesplot)
 
 # set the current working directory to the one where this file is
 run_if_not_knitting(current_working_dir <- dirname(rstudioapi::getActiveDocumentContext()$path))
 run_if_not_knitting(setwd(current_working_dir))
 
 # options to increase efficiency of brms models (optional)
-options(brms.backend = "cmdstanr")
+#options(brms.backend = "cmdstanr")
 options(mc.cores = parallel::detectCores())
 
 ```
@@ -47,7 +47,7 @@ We will be working with Quantese again, see `01_exercise.qmd` and the other data
 ```{r}
 #| label: load-quantese
 
-quantese <- read_csv("../data/quantese_naming_sim.csv") 
+quantese <- read_csv("../../data/quantese_naming_sim.csv") 
 # add log-transformed reaction time
 quantese <- quantese |> 
   mutate(log_rt = log(rt))
@@ -90,40 +90,20 @@ For priors of class `Intercept` and `b`, constrain the parameter space with a wi
 
 # YOUR CODE HERE
 
-# formula
-mdl_formula <- bf(log_rt ~ log_frequency)
+# bmrs(Bayesian Regression Models using Stan) formula
+quant_formula <- bf(log_rt ~ log_frequency+
+                     (1 + log_frequency | PartID) +
+                     (1 | ItemID))
 # check priors
-get_prior(mdl_formula, quantese) # intercept, log_frequency, sigma?
-
-# prior exploration
-quantese %>% 
-  ggplot(aes(x=log_rt, y=log_frequency))+
-  geom_point()+
-  theme_minimal()
-
-# - for intercept 
-min_rt <- min(quantese$log_rt) # 5.87
-max_rt <- max(quantese$log_rt) # 7.79
-mean_rt <- mean(quantese$log_rt, na.rm=TRUE) # 6.54
-sd_rt <- (max_rt - min_rt)/4
-
-#plot_normal(mean_rt, sd_rt)
-
-# - for coef log_freq -- outcome(rt) sd / predictor(freq) sd
-min_freq <- min(quantese$log_frequency) 
-max_freq <- max(quantese$log_frequency) 
-mean_freq <- mean(quantese$log_frequency, na.rm=TRUE) 
-sd_freq <- (max_freq - min_freq)/4
-
-#plot_normal(mean_freq, sd_freq)
-
-sd_coef <- sd_rt/sd_freq
+get_prior(quant_formula, quantese) # intercept, log_frequency, sigma?
 
 # specify weakly informative priors
-my_priors <- c(prior(normal(mean_rt, sd_rt), class = "Intercept"),
-               prior(normal(0, sd_coef), class = "b", coef = "log_frequency"))
+my_priors <- c(prior(normal(6.5, 2.5), class = "Intercept"),
+               prior(normal(0, 2.5), class = "b", coef = "log_frequency"))
 
 ```
+
+\
 
 We can also now get used to specifying priors for classes `sd` and `cor`. Priors of [class `sd`]{.underline} are priors for the variance associated with our random effects. You see here 2 `sd` priors for group `ItemID`. The first one is just a generic prior for all `ItemID` coefficients and the second one with the `coef = Intercept` stands for the random intercept variation between items. Similarly for group `PartID`, we have 3 priors. The first one is again just a generic prior for all `PartID` coefficients. The second one with the `coef = Intercept` stands for the random intercept variation between participants. And the last one with the `coef = log_frequency` stands for the random slope variation between participants for the predictor `log_frequency`. How do we specify these priors. We have usually no idea what to expect from these parameters, so we here also specify very diffuse priors centered on zero. We pick a cauchy distribution (remember? super squashed normal distributions) because they have thick tails. Let's make them super diffuse and pick a `sd = 3` for both items and participants.
 
@@ -143,8 +123,10 @@ And finally, if your model as random slopes, they have by default a correlation 
 
 # add weakly informative priors for cor
 my_priors <- c(my_priors, 
-               prior(lkj(1), class = 'cor'))
-
+               prior(lkj(1), class = 'cor')) #LKJ = Lewandowski-Kurowicka-Joe
+# lkj(1) : assuming any correlation can equally possible (up to +- 1)
+# lkj(2) : closer to 0, prior assuming weaker correlation
+# lkj(3) : even more close to 0, prior assuming almost no correlation
 ```
 
 ### (B) Run model
@@ -161,30 +143,41 @@ Now run the model with 4 chains, 1000 warm-up and 1000 post-warm-up samples per 
 
 # YOUR CODE HERE
 
-# prior predictive check 
-#xmdl_prior <- brm(log_rt~ log_frequency,
-#                  family = gaussian(),
-#                  prior = my_priors,
-#                  sample_prior = 'only',
-#                  data = quantese,
-#                  seed = 12)
-#spread_draws(b_Intercept, b_log_frequency)
-#pp_check(xmdl_prior)
-
-
 # full model
-xmdl <- brm(log_rt ~ log_frequency + (1 + log_frequency | PartID) + (1 | ItemID),
+
+xmdl_quant <- brm(quant_formula,
                   family = gaussian(),
                   prior = my_priors,
                   data = quantese,
-                  chains = 4, cores = 4,
-            iter = 1000, warmup = 1000, seed = 12)
+                  chains = 4, 
+                  cores = 4,
+                  iter = 2000, 
+                  warmup = 1000, 
+                  thin=1,
+                  seed = 12)
 
-# I couldnt find a way to fix the following error, 
+mcmc_plot(xmdl_quant, type = "trace") # looks good, caterpillar
+mcmc_dens_overlay(xmdl_quant, pars = "b_log_frequency") # looks good
+xmdl_quant # Bulk ESS is too low
+
+
+# increase post-warm-up samples
+xmdl_quant <- brm(quant_formula,
+                  family = gaussian(),
+                  prior = my_priors,
+                  data = quantese,
+                  chains = 4,
+                  cores = 4, 
+                  iter = 4000,
+                  warmup = 1000,
+                  thin = 1,
+                  seed = 12)
+
+mcmc_plot(xmdl_quant, type = "trace")
+mcmc_dens_overlay(xmdl_quant, pars = "b_log_frequency") # looks good
+xmdl_quant # ESS fine
 
 ```
-
-![](images/clipboard-1725270259.png)
 
 ### (C) Plot posterior predictions
 
@@ -192,7 +185,51 @@ Find a way to extract posterior samples from the model for the `Intercept` and t
 
 ```{r}
 #| label: plot_predictions
+# create new df with the continuous predicdtor
+min <- min(quantese$log_frequency)
+max <- max(quantese$log_frequency)
 
-# YOUR CODE HERE
+new_data <- tibble(
+  log_frequency=seq(min, max, length.out=100)) #delt på 100 
+
+draws <- xmdl_quant |> 
+  # extract posterior draws from model
+  spread_draws(b_Intercept, b_log_frequency) |> 
+  # evaluates the linear predictor at each value of log_frequency
+  crossing(new_data) |> 
+  mutate(
+    mu = b_Intercept + b_log_frequency * log_frequency
+  ) |> 
+  # summarizes samples (mean and 95% CrI)
+  group_by(log_frequency) %>%
+  summarise(
+    mean = mean(mu),
+    # extract different bands of uncertainty
+    ## middle 50%
+    lower50 = quantile(mu, 0.25),
+    upper50 = quantile(mu, 0.75),
+    ## middle 80%
+    lower80 = quantile(mu, 0.1),
+    upper80 = quantile(mu, 0.9),
+    ## middle 95%
+    lower95 = quantile(mu, 0.025),
+    upper95 = quantile(mu, 0.975)
+  )
+
+# plot posterior mean and 95% Credible Intervals
+ggplot(draws, aes(log_frequency, mean)) +
+  geom_ribbon(aes(ymin = lower50, ymax = upper50), alpha = 0.5) +
+  geom_ribbon(aes(ymin = lower80, ymax = upper80), alpha = 0.2) +
+  geom_ribbon(aes(ymin = lower95, ymax = upper95), alpha = 0.1) +
+  geom_line(size = 1,
+            colour = "white") +
+  labs(
+    y = "Predicted log(RT)",
+    x = "log(frequency)",
+    title = "Log frequency predicts response latency",
+    subtitle = "Posterior mean and 95% credible interval"
+  ) +
+  theme_minimal()
+
 
 ```

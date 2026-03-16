@@ -28,14 +28,14 @@ run_if_not_knitting <- function(expr) {
 # nifty code using the pacman package
 # it checks if the packages specified below are installed, if not, they will be installed, if yes, they will be loaded
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(rstudioapi, tidyverse, lme4, brms, bayestestR)
+pacman::p_load(rstudioapi, tidyverse, lme4, brms, bayestestR, tidybayes, bayesplot)
 
 # set the current working directory to the one where this file is
 run_if_not_knitting(current_working_dir <- dirname(rstudioapi::getActiveDocumentContext()$path))
 run_if_not_knitting(setwd(current_working_dir))
 
 # options to increase efficiency of brms models (optional)
-options(brms.backend = "cmdstanr")
+#options(brms.backend = "cmdstanr")
 options(mc.cores = parallel::detectCores())
 
 ```
@@ -223,4 +223,8 @@ ggplot(draws, aes(log_frequency, mean)) +
   ) +
   theme_minimal()
 
+```
+
+```{r}
+?bayesplot::spread_draws
 ```

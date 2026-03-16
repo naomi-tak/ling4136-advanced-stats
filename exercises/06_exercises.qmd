@@ -11,6 +11,8 @@ execute:
   cache: false
 ---
 
+\*
+
 # Preamble: Loading packages and configuration
 
 ```{r}
