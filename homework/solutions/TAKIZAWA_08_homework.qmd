@@ -9,7 +9,7 @@ execute:
   warning: false
   message: false
   cache: true
-bibliography: ../resources/bibliography.bib
+bibliography: ../../resources/bibliography.bib
 ---
 
 # Preamble: Loading packages and configuration
@@ -221,7 +221,7 @@ bayesfactor_parameters(posteriors, priors, direction = "two-sided", null = 0)
 
 Posterior distributions of the model indicate that the semantic change from different to similar , the distance between two cities are estimated to decreases by an average of -9.04 \[95% Credible Interval:-16.68 to -1.22\]. The majority of the posterior samples are negative, indicating that positive values are still plausible but less likely (given the data, the model, and priors).
 
-Subsequently, we calculate the Savage-Dickey density ratio [@DickeyLientz1970-The-Weighted-Li; @WagenmakersLodewyckx2010-Bayesian-hypoth; @roettgermeaningful], i.e., we relate the evidence (the probability of the posterior distribution at point-zero) for the model based on the priors only (i.e., before seeing the data) to the evidence for the model based on both priors and likelihood (i.e., after seeing the data) [e.g., @WetzelsGrasman2010-An-encompassing]. The Savage-Dickey method lets us assess evidence for and against a null hypothesis using Bayes factor. Here, the Bayes factor indicates the degree by which the mass of the posterior distribution has shifted further away from the point null value (relative to the prior distribution). Our analysis yields a Bayes Factor of 4.80.
+Subsequently, we calculate the Savage-Dickey density ratio [@DickeyLientz1970-The-Weighted-Li; @WagenmakersLodewyckx2010-Bayesian-hypoth; @roettgermeaningful], i.e., we relate the evidence (the probability of the posterior distribution at point-zero) for the model based on the priors only (i.e., before seeing the data) to the evidence for the model based on both priors and likelihood (i.e., after seeing the data) [@WetzelsGrasman2010-An-encompassing]. The Savage-Dickey method lets us assess evidence for and against a null hypothesis using Bayes factor. Here, the Bayes factor indicates the degree by which the mass of the posterior distribution has shifted further away from the point null value (relative to the prior distribution). Our analysis yields a Bayes Factor of 4.80,indicating that the probability of the effect semantic = similar being point null has decreased , suggesting *moderate* evidence for the alternative hypothesis that the effect of Semantic = similar is zero[@lee-wagenmakers_Bayesian_book_2014].
 
 ## OPTIONAL (h) compare your interpretation to the original findings
 
