@@ -29,7 +29,7 @@ run_if_not_knitting <- function(expr) {
 # nifty code using the pacman package
 # it checks if the packages specified below are installed, if not, they will be installed, if yes, they will be loaded
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(rstudioapi, tidyverse, tidybayes, brms, bayesplot, bayestestR, modelr)
+pacman::p_load(rstudioapi, tidyverse, tidybayes, brms, bayesplot, bayestestR, modelr,logspline)
 
 # set the current working directory to the one where this file is
 run_if_not_knitting(current_working_dir <- dirname(rstudioapi::getActiveDocumentContext()$path))
@@ -136,13 +136,92 @@ Now interpret the model relative to the research question and describe uncertain
 ```{r}
 #| label: interpret_sim
 
+#contrasts(sim$Sem) 
+#contrasts(sim$Phon)
 
+#visualize posteriors
+
+xmdl_sim |> 
+  spread_draws(b_Sem1) |> 
+  ggplot(aes(x = b_Sem1)) +
+   stat_halfeye(fill = 'darkorchid3') +
+   geom_vline(xintercept = 0, lty = 'dashed') +
+   scale_x_continuous(limits = c(-30, 10)) +
+   labs(x = "Semantic = similar",
+        y = "") +
+   theme_minimal()
+
+xmdl_sim |> 
+  spread_draws(b_Phon1) |> 
+  ggplot(aes(x = b_Phon1)) +
+   stat_halfeye(fill = 'darkorchid3') +
+   geom_vline(xintercept = 0, lty = 'dashed') +
+   scale_x_continuous(limits = c(-15, 30)) +
+   labs(x = "Phonetic = similar",
+        y = "") +
+   theme_minimal()
+
+
+xmdl_sim |> 
+  spread_draws(`b_Sem1:Phon1`) |> 
+  ggplot(aes(x =`b_Sem1:Phon1`)) +
+   stat_halfeye(fill = 'darkorchid3') +
+   geom_vline(xintercept = 0, lty = 'dashed') +
+   scale_x_continuous(limits = c(-30, 30)) +
+   labs(x = "Similar phonetic x similar semantic",
+        y = "") +
+   theme_minimal()
+
+```
+
+```{r}
+#calculate posterior probabilities of direction, 
+
+xmdl_sim |> 
+  spread_draws(b_Sem1) |> 
+  select(b_Sem1) |> 
+  p_direction()
+```
+
+```{r}
+#calculate Bayes Factors for evidence for and against the posterior coefficients being point zero.
+library(logspline)
+
+#describe uncertainty
+
+#For the semantic similarity effect (Sem1), the posterior distribution has a mean of -9.04, with a 95% highest probability density interval between -16.68 and -1.22.For the phonological similarity effect (Phon1), the posterior distribution has a mean of 4.99, with a 95% highest probability density interval between -2.63 and 12.62 (inconsistent direction).For the interaction effect (Sem1:Phon1), the posterior distribution has a mean of -3.15 units, with a 95% highest probability density interval between -17.16 and 10.72.
+
+# extract posteriors
+posteriors <- xmdl_sim |> 
+  spread_draws(b_Sem1) |> 
+  select(b_Sem1)
+# refit the model only based on the priors
+xmdl_sim_priors <- brm(sim_formula,
+                  family = gaussian(),
+                  prior = my_priors,
+                  sample_prior = "only",
+                  data = sim,
+                  chains = 4,
+                  cores = 4, 
+                  iter = 2000,
+                  warmup = 1000,
+                  thin = 1,
+                  seed = 42)
+
+priors <- xmdl_sim_priors |> 
+  spread_draws(b_Sem1) |> 
+  select(b_Sem1)
+
+# run bayes factor against the null value
+bayesfactor_parameters(posteriors, priors, direction = "two-sided", null = 0)
 
 ```
 
 ## (g) Write up your entire analysis:
 
-YOUR WRITE UP HERE
+Posterior distributions of the model indicate that the semantic change from different to similar , the distance between two cities are estimated to decreases by an average of -9.04 \[95% Credible Interval:-16.68 to -1.22\]. The majority of the posterior samples are negative, indicating that positive values are still plausible but less likely (given the data, the model, and priors).
+
+Subsequently, we calculate the Savage-Dickey density ratio [@DickeyLientz1970-The-Weighted-Li; @WagenmakersLodewyckx2010-Bayesian-hypoth; @roettgermeaningful], i.e., we relate the evidence (the probability of the posterior distribution at point-zero) for the model based on the priors only (i.e., before seeing the data) to the evidence for the model based on both priors and likelihood (i.e., after seeing the data) [e.g., @WetzelsGrasman2010-An-encompassing]. The Savage-Dickey method lets us assess evidence for and against a null hypothesis using Bayes factor. Here, the Bayes factor indicates the degree by which the mass of the posterior distribution has shifted further away from the point null value (relative to the prior distribution). Our analysis yields a Bayes Factor of 4.80.
 
 ## OPTIONAL (h) compare your interpretation to the original findings
 
